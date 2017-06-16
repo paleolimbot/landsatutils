@@ -59,7 +59,7 @@ landsat_overlay <- function(scene, fun, ...) {
                              paste(missing_args, collapse = ", "))
 
   # modify function arguments to include all the band names so that raster::calc can be used
-  formals(fun) <- setNames(rep(list(rlang::missing_arg()), length(band_names)), band_names)
+  formals(fun) <- stats::setNames(rep(list(rlang::missing_arg()), length(band_names)), band_names)
 
   # return result of raster::overlay
   raster::overlay(scene, fun = fun, ...)

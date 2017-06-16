@@ -45,7 +45,7 @@ landsat_scene <- function(B1 = NULL, B2 = NULL, B3 = NULL, B4 = NULL, B5 = NULL,
   }
 
   # make raster stack
-  rstack <- do.call(raster::stack, setNames(layers, NULL))
+  rstack <- do.call(raster::stack, stats::setNames(layers, NULL))
 
   # keep band names
   attrs$.band_names <- names(bands)
@@ -66,7 +66,7 @@ as.landsat_scene <- function(x, band_names, attrs = list()) {
 
   # check band_names object for valid band names
   valid_band_names <- c(paste0("B", 1:11), "BQA")
-  if(!is.atomix(x) || !all(band_names %in% valid_band_names)) {
+  if(!is.atomic(x) || !all(band_names %in% valid_band_names)) {
     stop("Band names must be in (", paste(valid_band_names, collapse = ", "), ")")
   }
 
@@ -93,7 +93,7 @@ is.landsat_scene <- function(x) {
 # load a list of landsat scenes from a vector of filenames
 landsat_load_scenes <- function(path, include_bands = NULL) {
   # parse filename
-  info <- landsat_parse_filename(path)
+  info <- landsat_parse_filename_image(path)
 
   # remove the band number
   info$band_number <- NULL
