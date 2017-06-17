@@ -8,7 +8,7 @@ Description: Acquiring, processing, and visualizing Landsat data is
   a common task. This package provides helper functions for workflows
   that are commonly implemented using these data.
 License: GPL-3
-Imports: rlang, raster, sp, lubridate, stringr, reshape2, plyr, methods, stats
+Imports: rlang, raster, sp, lubridate, tidyr, stringr, plyr, methods, stats
 Suggests: testthat
 Encoding: UTF-8
 LazyData: true

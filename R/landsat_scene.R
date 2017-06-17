@@ -1,9 +1,27 @@
 
-# define function to create a scene raster stack
-# a scene raster stack is just a raster stack (or brick) with band names
-# b1 - b11 + BQA, and a lansat_attrs that stores landsat-specific info with the raster
-# (just the band names contained in the object, for now)
-# arguments can be filenames or RasterLayer objects
+#' Create a RasterStack with attached Band Name Information
+#'
+#' This function creates a RasterStack (see \link[raster]{stack}) with band name
+#' information attached. This information will be ignored by most functions in the
+#' \code{raster} package, but is propogated by \link{landsat_crop}, \link{landsat_project},
+#' \link{landsat_mask}, and \link{landsat_overlay}. The primary reason to use keep
+#' the band name information with the RasterStack/RasterBrick object is for use with
+#' \link{landsat_overlay}, which allows functions to be written in terms of band
+#' numbers. This function does not load any raster files into memory.
+#'
+#' @param B1,B2,B3,B4,B5,B6,B7,B8,B9,B10,B11,BQA \code{RasterLayer} or
+#'   filenames of raster image files to be passed to \link[raster]{raster}.
+#' @param x A RasterBrick or RasterStack object
+#' @param band_names The band names associated with the RasterBrick or
+#'   Raster Stack object.
+#' @param attrs A \code{list} that contains arbitrary meta information to keep
+#'   with the \code{landsat_scene} object.
+#'
+#' @seealso \link{landsat_load_scenes}
+#'
+#' @return A \code{RasterStack} object with band names attached as attributes.
+#' @export
+#'
 landsat_scene <- function(B1 = NULL, B2 = NULL, B3 = NULL, B4 = NULL, B5 = NULL,
                           B6 = NULL, B7 = NULL, B8 = NULL, B9 = NULL, B10 = NULL,
                           B11 = NULL, BQA = NULL, attrs = list()) {
@@ -57,7 +75,8 @@ landsat_scene <- function(B1 = NULL, B2 = NULL, B3 = NULL, B4 = NULL, B5 = NULL,
   rstack
 }
 
-# turn an existing RasterStack or RasterBrick into a landsat_scene
+#' @rdname landsat_scene
+#' @export
 as.landsat_scene <- function(x, band_names, attrs = list()) {
   # check x input
   if(!methods::is(x, "RasterStack") && !methods::is(x, "RasterBrick")) {
@@ -85,18 +104,32 @@ as.landsat_scene <- function(x, band_names, attrs = list()) {
   x
 }
 
-# test if object was created with landsat_scene
+#' @rdname landsat_scene
+#' @export
 is.landsat_scene <- function(x) {
   !is.null(attr(x, "landsat_attrs"))
 }
 
-# load a list of landsat scenes from a vector of filenames
+#' Load multiple scenes from a vector of image filenames
+#'
+#' This function applies \link{landsat_scene} to a vector of image filenames, such
+#' as that listed by \link{landsat_list_images}.
+#'
+#' @param path A vector of landsat image filenames
+#' @param include_bands A vector of band codes to include in the output,
+#'   or NULL to use all of them.
+#'
+#' @export
+#' @return A data.frame with the same columns as \link{landsat_parse_filename_image}
+#'   plus one named \code{scene}, containing the landsat scenes as loaded by
+#'   \link{landsat_scene}.
+#'
 landsat_load_scenes <- function(path, include_bands = NULL) {
+  # deal with zero-length input
+  if(length(path) == 0) return(data.frame())
+
   # parse filename
   info <- landsat_parse_filename_image(path)
-
-  # remove the band number
-  info$band_number <- NULL
 
   # filter bands, if included as an argument
   if(!is.null(include_bands)) {
@@ -117,8 +150,8 @@ landsat_load_scenes <- function(path, include_bands = NULL) {
   # get list of band numbers
   band_codes <- sort(unique(info$band_code))
 
-  # use reshape2::dcast to cast the filenames into columns per band
-  info <- reshape2::dcast(info, ... ~ band_code, value.var = "path")
+  # use tidyr:: to cast the filenames into columns per band
+  info <- tidyr::spread(info, key = "band_code", value = "path")
 
   # load scenes into a list() using landsat_scene
   info$scene <- plyr::mlply(info[band_codes], landsat_scene)
