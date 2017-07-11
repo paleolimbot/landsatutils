@@ -31,13 +31,15 @@ landsat_scene <- function(B1 = NULL, B2 = NULL, B3 = NULL, B4 = NULL, B5 = NULL,
                 BQA = BQA)
 
   # remove null or NA bands
-  bands <- bands[!vapply(bands, function(x) is.null(x) || is.na(x), logical(1))]
+  bands <- bands[!vapply(bands, function(x) is.null(x) || identical(x, NA), logical(1))]
 
   # throw error if there are no bands
   if(length(bands) == 0) stop("Zero bands were loaded in call to landsat_scene()")
 
   # make raster layers
-  layers <- lapply(bands, raster::raster)
+  layers <- lapply(bands, function(x) {
+    if(methods::is(x, "RasterLayer")) x else raster::raster(x)
+  })
 
   # compare extents
   layer_indicies_by_extent <- landsat_compare_extents(layers)
@@ -126,7 +128,7 @@ is.landsat_scene <- function(x) {
 #'
 landsat_load_scenes <- function(path, include_bands = NULL) {
   # deal with zero-length input
-  if(length(path) == 0) return(data.frame())
+  if(length(path) == 0) return(tibble::tibble())
 
   # parse filename
   info <- landsat_parse_filename_image(path)
@@ -139,9 +141,11 @@ landsat_load_scenes <- function(path, include_bands = NULL) {
     # filter info to only include rows with that band number
     info <- info[info$band_code %in% include_bands,]
 
-    # if there are no rows, stop
-    if(nrow(info) == 0) stop("Zero scenes were found with bands ",
-                             paste(include_bands, collapse = ", "))
+    # if there are no rows, return an empty tibble with a warning
+    if(nrow(info) == 0) {
+      warning("Zero scenes were found with bands ", paste(include_bands, collapse = ", "))
+      return(tibble::tibble())
+    }
   }
 
   # sort by photo date, band number
@@ -156,8 +160,14 @@ landsat_load_scenes <- function(path, include_bands = NULL) {
   # load scenes into a list() using landsat_scene
   info$scene <- plyr::mlply(info[band_codes], landsat_scene)
 
+  # give the scene list a custom class
+  class(info$scene) <- c("landsat_scene_list", "list")
+
   # remove filename columns
   info[band_codes] <- NULL
+
+  # return info with a custom class
+  class(info) <- c("landsat_scene_df", class(info))
 
   # return info
   info

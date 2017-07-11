@@ -765,6 +765,13 @@ test_that("parsing functions generate the correct dimensions of output", {
   expect_true(all(grepl(landsatutils:::landsat_product_id_regex, imgN$product_id)))
 })
 
+test_that("paths are propogated through parsing functions", {
+  arcN <- landsat_parse_filename_archive(archive_files)
+  expect_identical(arcN$path, archive_files)
+  imgN <- landsat_parse_filename_image(image_files)
+  expect_identical(imgN$path, image_files)
+})
+
 test_that("parsing invalid product IDs generates an error", {
   expect_is(landsat_parse_product_id("LT05_L1TP_063013_19960711_20170104_01_T1"),
             "data.frame")

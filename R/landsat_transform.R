@@ -1,5 +1,16 @@
 
-# define some common landsat functions that will propogate the landsat_attrs
+#' Propogate Landsat attributes through transformations
+#'
+#'
+#'
+#' @param scene
+#' @param fun
+#' @param ...
+#'
+#' @return
+#' @export
+#'
+#' @examples
 landsat_transform <- function(scene, fun, ...) {
   # this is a base method that applies a function to a landsat_scene and propogates
   # the landsat_attrs

@@ -67,7 +67,7 @@ landsat_parse_filename_image <- function(path) {
   # this is vectorized, so a vector of file paths can be passed to "path"
 
   # handle zero-length output
-  if(length(path) == 0) return(data.frame())
+  if(length(path) == 0) return(tibble::tibble())
 
   # remove the first part of the filename and the extension, make upper case
   fname <- toupper(basename(path))
@@ -78,7 +78,7 @@ landsat_parse_filename_image <- function(path) {
                             paste(path[!valid_name], collapse = ", "))
 
   # extract product ID information
-  product_id_info <- landsat_parse_product_id(fname)
+  product_id_info <- landsat_parse_product_id(path)
 
   # extract image filename components from the regex
   filename_components <- stringr::str_match(fname, landsat_image_regex)
@@ -95,7 +95,7 @@ landsat_parse_filename_archive <- function(path) {
   # this is vectorized, so a vector of file paths can be passed to "path"
 
   # handle zero-length output
-  if(length(path) == 0) return(data.frame())
+  if(length(path) == 0) return(tibble::tibble())
 
   # check that fnames match the regex
   valid_name <- grepl(landsat_archive_regex, path, ignore.case = TRUE)
@@ -114,7 +114,7 @@ landsat_parse_product_id <- function(path) {
   # this is vectorized, so a vector of file paths can be passed to "path"
 
   # handle zero-length output
-  if(length(path) == 0) return(data.frame())
+  if(length(path) == 0) return(tibble::tibble())
 
   products <- c("L" = "Landsat")
   # "T" is listed twice on the website, which doesn't make sense
@@ -149,7 +149,7 @@ landsat_parse_product_id <- function(path) {
   collection_category_code <- filename_components[, 11, drop = TRUE]
 
   # return a data.frame with the info
-  data.frame(
+  tibble::tibble(
     path = path,
     product_id = product_id,
     product_code = product_code,
@@ -162,9 +162,7 @@ landsat_parse_product_id <- function(path) {
     wrs_path = wrs_path,
     wrs_row = wrs_row,
     acquisition_date = acquisition_date,
-    processing_date = processing_date,
-    stringsAsFactors = FALSE,
-    row.names = NULL
+    processing_date = processing_date
   )
 }
 
