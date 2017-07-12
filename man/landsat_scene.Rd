@@ -33,7 +33,7 @@ A \code{RasterStack} object with band names attached as attributes.
 This function creates a RasterStack (see \link[raster]{stack}) with band name
 information attached. This information will be ignored by most functions in the
 \code{raster} package, but is propogated by \link{landsat_crop}, \link{landsat_project},
-\code{landsat_mask}, and \code{landsat_overlay}. The primary reason to use keep
+\link{landsat_mask}, and \link{landsat_overlay}. The primary reason to use keep
 the band name information with the RasterStack/RasterBrick object is for use with
 \link{landsat_overlay}, which allows functions to be written in terms of band
 numbers. This function does not load any raster files into memory.
